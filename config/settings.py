@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'apps.contacts',
     'apps.companies',
     'apps.interactions',
+    'apps.audit',
     "django_filters",
 ]
 
