@@ -12,11 +12,13 @@ class ContactAdmin(admin.ModelAdmin):
         "relationship_score",
         "last_interaction_date",
         "needs_follow_up",
+        "is_deleted"
     )
 
     list_filter = (
         "status",
         "category",
+        "is_deleted"
     )
 
     search_fields = (

@@ -17,6 +17,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 env = environ.Env()
 environ.Env.read_env(BASE_DIR / ".env")
 
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
@@ -28,8 +29,10 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+GOOGLE_CLIENT_ID = env("GOOGLE_CLIENT_ID")
 
 # Application definition
+
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -46,6 +49,8 @@ INSTALLED_APPS = [
     'apps.companies',
     'apps.interactions',
     'apps.audit',
+    'apps.authentication',
+    "apps.integrations",
     "django_filters",
 ]
 
@@ -78,6 +83,8 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
+CELERY_BROKER_URL = env("CELERY_BROKER_URL")
+CELERY_RESULT_BACKEND = env("CELERY_BROKER_URL")
 
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases

@@ -12,6 +12,11 @@ from .serializers import ContactSerializer
 from apps.audit.models import AuditLog
 from apps.audit.services import AuditService
 
+from django.utils import timezone
+
+from rest_framework.decorators import action
+from rest_framework.response import Response
+
 class ContactViewSet(viewsets.ModelViewSet):
     queryset = Contact.objects.all()
     serializer_class = ContactSerializer
@@ -24,7 +29,10 @@ class ContactViewSet(viewsets.ModelViewSet):
     search_fields = ["name","email","job_title",]
 
     def get_queryset(self):
-        return Contact.objects.filter(owner=self.request.user)
+        return Contact.objects.filter(
+            owner=self.request.user,
+            is_deleted=False,
+        )
     def perform_create(self, serializer):
         contact = serializer.save(owner=self.request.user)
 
@@ -45,12 +53,26 @@ class ContactViewSet(viewsets.ModelViewSet):
         
         )
     def perform_destroy(self, instance):
-        print("Inside perform_destroy")
-        AuditService.log_action(
-            user=self.request.user,
-            contact=instance,
-            action=AuditLog.Action.DELETE,
-            description=f"Deleted contact '{instance.name}'",
-        )
+        instance.is_deleted=True
+        instance.deleted_at=timezone.now()
+        instance.save()
 
-        instance.delete()
+    @action(detail=True, methods=["post"])
+    def restore(self, request, pk=None):
+        contact = Contact.objects.filter(
+            owner=request.user,
+            is_deleted=True,
+            pk=pk,
+        ).first()
+
+        if not contact:
+            return Response(
+                {"detail": "Contact not found."},
+                status=404,
+            )
+
+        contact.is_deleted = False
+        contact.deleted_at = None
+        contact.save()
+
+        return Response({"message": "Contact restored successfully."})
