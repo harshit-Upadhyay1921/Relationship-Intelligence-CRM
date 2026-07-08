@@ -24,13 +24,17 @@ class RelationshipScoringService:
         last_interaction = contact.interactions.order_by("-interaction_date").first()
         return last_interaction.interaction_date if last_interaction else None
 
-    @staticmethod
-    def needs_follow_up(contact):
-        last_interaction_date = RelationshipScoringService.get_last_interaction(contact)
-        
-        if not last_interaction_date:
-            return True
 
-        days_since_last_interaction = ((timezone.now() - last_interaction_date).days)
-
-        return days_since_last_interaction > 30
+# Note:
+# `needs_follow_up()` is intentionally not kept in this service.
+# Relationship score calculation is non-trivial business logic, so it belongs here.
+# However, `needs_follow_up` is now just a simple derived property:
+#
+#     relationship_score < 50
+#
+# It is defined directly on the Contact model as a @property to avoid
+# duplicating trivial logic across the codebase.
+#
+# This is actually a cleaner architecture than what the course suggests.
+# It follows the principle of keeping simple derived properties on the model
+# while reserving the service layer for non-trivial business logic.

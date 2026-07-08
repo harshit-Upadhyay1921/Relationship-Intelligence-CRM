@@ -12,6 +12,9 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 import environ
 from pathlib import Path
 
+from celery.schedules import crontab
+
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 env = environ.Env()
@@ -52,6 +55,8 @@ INSTALLED_APPS = [
     'apps.authentication',
     "apps.integrations",
     "django_filters",
+
+    "django_celery_beat",
 ]
 
 MIDDLEWARE = [
@@ -85,6 +90,22 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 CELERY_BROKER_URL = env("CELERY_BROKER_URL")
 CELERY_RESULT_BACKEND = env("CELERY_BROKER_URL")
+
+CELERY_BEAT_SCHEDULE = {
+    "recalculate-relationship-scores": {
+        "task": "apps.contacts.tasks.recalculate_relationship_scores",
+        "schedule": crontab(hour=0, minute=0),   # 12:00 AM
+    },
+
+    "check-follow-ups": {
+        "task": "apps.contacts.tasks.check_follow_ups",
+        "schedule": crontab(hour=0, minute=5),   # 12:05 AM
+    },
+    "mark-dormant-contacts": {
+        "task": "apps.contacts.tasks.mark_dormant_contacts",
+        "schedule": crontab(hour=0, minute=30),
+    },
+}
 
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
@@ -153,3 +174,16 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+
+# Email configuration
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+
+EMAIL_HOST_USER = env("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD")
+
+EMAIL_USE_TLS = True
+
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER

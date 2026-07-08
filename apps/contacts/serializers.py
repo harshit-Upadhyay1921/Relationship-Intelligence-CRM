@@ -16,7 +16,8 @@ class ContactSerializer(serializers.ModelSerializer):
         many=True,
         read_only=True,
     )
-    relationship_score = serializers.ReadOnlyField()
+    # This was correct when relationship_score was a @property. Now you've changed it to a database field-> relationship_score = models.PositiveIntegerField(default=0). So you don't need to declare it manually anymore.
+    # relationship_score = serializers.ReadOnlyField() 
     needs_follow_up = serializers.ReadOnlyField()
     last_interaction_date = serializers.ReadOnlyField()
 

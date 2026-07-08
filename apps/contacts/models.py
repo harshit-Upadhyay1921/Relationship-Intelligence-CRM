@@ -58,6 +58,10 @@ class Contact(models.Model):
     is_deleted = models.BooleanField(default=False)
     deleted_at = models.DateTimeField(null=True, blank=True)
 
+    # Persisted in the database because Celery recalculates it periodically.
+    # This replaces the earlier computed @property for better performance.
+    relationship_score = models.PositiveIntegerField(default=0)
+
     def __str__(self):
         return self.name
 
@@ -65,12 +69,14 @@ class Contact(models.Model):
     def last_interaction_date(self):
         return RelationshipScoringService.get_last_interaction(self)
 
-    @property
-    def relationship_score(self):
-        return RelationshipScoringService.calculate_relationship_score(
-            self.last_interaction_date
-        )
+    # earlier needed but not now since we are persisting the score in the contact model as it will be calculated and updated every night by a scheduled task. So, we don't need to calculate it on the fly anymore.
+    # @property
+    # def relationship_score(self):
+    #     return RelationshipScoringService.calculate_relationship_score(
+    #         self.last_interaction_date
+    #     )
 
     @property
     def needs_follow_up(self):
-        return RelationshipScoringService.needs_follow_up(self)
+        return self.relationship_score < 50
+    
