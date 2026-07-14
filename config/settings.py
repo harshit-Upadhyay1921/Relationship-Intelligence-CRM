@@ -34,6 +34,8 @@ ALLOWED_HOSTS = []
 
 GOOGLE_CLIENT_ID = env("GOOGLE_CLIENT_ID")
 
+GEMINI_API_KEY = env("GEMINI_API_KEY")
+
 # Application definition
 
 
@@ -54,6 +56,8 @@ INSTALLED_APPS = [
     'apps.audit',
     'apps.authentication',
     "apps.integrations",
+    "apps.ai",
+
     "django_filters",
 
     "django_celery_beat",

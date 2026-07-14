@@ -21,6 +21,27 @@ class ContactSerializer(serializers.ModelSerializer):
     needs_follow_up = serializers.ReadOnlyField()
     last_interaction_date = serializers.ReadOnlyField()
 
+    follow_up_suggestion = serializers.SerializerMethodField()
+
+    def get_follow_up_suggestion(self, obj):
+
+        request = self.context.get("request")
+
+        if not request:
+            return None
+
+        if not self.context.get("include_follow_up_suggestion"):
+            return None
+
+        if obj.summary_status != Contact.SummaryStatus.READY:
+            return None
+
+        if not obj.ai_summary:
+            return None
+
+        from apps.ai.services import AIFollowUpSuggestionService
+
+        return AIFollowUpSuggestionService.generate_suggestion(obj)
     class Meta:
         model = Contact
         fields = "__all__"

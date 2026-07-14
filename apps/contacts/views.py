@@ -17,6 +17,8 @@ from django.utils import timezone
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from apps.ai.services import trigger_summary_generation
+
 class ContactViewSet(viewsets.ModelViewSet):
     queryset = Contact.objects.all()
     serializer_class = ContactSerializer
@@ -76,3 +78,35 @@ class ContactViewSet(viewsets.ModelViewSet):
         contact.save()
 
         return Response({"message": "Contact restored successfully."})
+    
+
+    def retrieve(self, request, *args, **kwargs):
+
+        instance = self.get_object()
+
+        if instance.interactions.count() == 0:
+            serializer = self.get_serializer(
+                instance,
+                context={
+                    **self.get_serializer_context(),
+                    "include_follow_up_suggestion": True,
+                },
+            )
+            return Response(serializer.data)
+        
+
+        if instance.summary_status in (
+            Contact.SummaryStatus.STALE,
+            Contact.SummaryStatus.NOT_GENERATED,
+        ):
+            instance = trigger_summary_generation(instance)
+
+        serializer = self.get_serializer(
+            instance,
+            context={
+                **self.get_serializer_context(),
+                "include_follow_up_suggestion": True,
+            },
+        )
+
+        return Response(serializer.data)

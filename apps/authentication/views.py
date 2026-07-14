@@ -34,3 +34,19 @@ class GoogleLoginView(APIView):
             },
             status=status.HTTP_200_OK,
         )
+    
+
+# Google ID Token:
+# Used only once to verify the user's identity during login.
+#
+# Google Access Token:
+# Stored for calling Google APIs (e.g. Google People API for contact sync).
+#
+# JWT Access/Refresh Tokens:
+# Issued by our backend and used for authenticating all CRM API requests.
+
+
+# Google-specific data is stored separately from the User model.
+# This keeps authentication independent from third-party integrations and
+# makes it easy to support additional providers (Microsoft, LinkedIn, etc.)
+# without modifying the User schema.

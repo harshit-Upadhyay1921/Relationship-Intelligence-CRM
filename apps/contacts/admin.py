@@ -12,7 +12,9 @@ class ContactAdmin(admin.ModelAdmin):
         "relationship_score",
         "last_interaction_date",
         "needs_follow_up",
-        "is_deleted"
+        "is_deleted",
+        "ai_summary",
+        "summary_status",
     )
 
     list_filter = (

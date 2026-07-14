@@ -6,7 +6,7 @@ from apps.companies.models import Company
 from .services import RelationshipScoringService
 
 class Contact(models.Model):
-
+    
     class Status(models.TextChoices):
         ACTIVE = "ACTIVE", "Active"
         DORMANT = "DORMANT", "Dormant"
@@ -58,6 +58,25 @@ class Contact(models.Model):
     is_deleted = models.BooleanField(default=False)
     deleted_at = models.DateTimeField(null=True, blank=True)
 
+    class SummaryStatus(models.TextChoices):
+        NOT_GENERATED = "NOT_GENERATED", "Not Generated"
+        READY = "READY", "Ready"
+        STALE = "STALE", "Stale"
+        GENERATING = "GENERATING", "Generating"
+
+    ai_summary = models.TextField(blank=True, null=True)
+
+    summary_status = models.CharField(
+        max_length=20,
+        choices=SummaryStatus.choices,
+        default=SummaryStatus.NOT_GENERATED,
+    )
+
+    summary_generated_at = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+    
     # Persisted in the database because Celery recalculates it periodically.
     # This replaces the earlier computed @property for better performance.
     relationship_score = models.PositiveIntegerField(default=0)

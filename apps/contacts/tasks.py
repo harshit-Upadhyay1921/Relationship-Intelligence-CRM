@@ -5,6 +5,8 @@ from .models import Contact
 from .email_service import EmailService
 
 from .services import RelationshipScoringService
+from apps.contacts.models import Contact
+from apps.ai.services import AIInteractionSummaryService
 
 @shared_task
 def check_follow_ups():
@@ -44,3 +46,5 @@ def mark_dormant_contacts():
         if contact.relationship_score <= 25:
             contact.status = Contact.Status.DORMANT
             contact.save(update_fields=["status"])
+
+    
