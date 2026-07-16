@@ -109,7 +109,12 @@ CELERY_BEAT_SCHEDULE = {
         "task": "apps.contacts.tasks.mark_dormant_contacts",
         "schedule": crontab(hour=0, minute=30),
     },
+    "weekly-crm-report": {
+        "task": "apps.contacts.tasks.generate_weekly_crm_report",
+        "schedule": crontab(),
+    },
 }
+# day_of_week=0, hour=9, minute=0
 
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases

@@ -12,3 +12,13 @@ class EmailService:
             from_email=None,
             recipient_list=[contact.email],
         )
+
+    @staticmethod
+    def send_weekly_report(user, report):
+
+        send_mail(
+            subject="Your Weekly CRM Report",
+            message=report,
+            from_email=None,
+            recipient_list=[user.email],
+        )
