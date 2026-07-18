@@ -109,25 +109,42 @@ def generate_weekly_crm_report():
 @shared_task
 def import_contacts(file_path, user_id):
 
-    user = User.objects.get(
-        id=user_id
-    )
+    user = User.objects.get(id=user_id)
 
     with open(file_path) as file:
 
         reader = csv.DictReader(file)
 
-        for row in contacts:
+        for row in reader:
             Contact.objects.update_or_create(
-            owner=request.user,
-            email=row["email"],
-            defaults={
-                "name": row["name"],
-                "phone": row["phone"],
-                "job_title": row["job_title"],
-                "notes": row.get("notes", ""),
-                "status": row.get("status", Contact.Status.ACTIVE),
-                "category": row.get("category", Contact.Category.OTHER),
-            },
-        )
+                owner=user,
+                email=row["email"],
+                defaults={
+                    "name": row["name"],
+                    "phone": row["phone"],
+                    "job_title": row["job_title"],
+                    "notes": row.get("notes", ""),
+                    "status": row.get(
+                        "status",
+                        Contact.Status.ACTIVE,
+                    ),
+                    "category": row.get(
+                        "category",
+                        Contact.Category.OTHER,
+                    ),
+                },
+            )
 
+
+@shared_task
+def cleanup_soft_deleted_contacts():
+    contacts = Contact.objects.filter(
+        is_deleted=True,
+        deleted_at__lt=timezone.now() - timedelta(days=30),
+    )
+
+    count = contacts.count()
+
+    contacts.delete()
+
+    print(f"Deleted {count} soft-deleted contacts.")
