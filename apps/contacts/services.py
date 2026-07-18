@@ -38,3 +38,47 @@ class RelationshipScoringService:
 # This is actually a cleaner architecture than what the course suggests.
 # It follows the principle of keeping simple derived properties on the model
 # while reserving the service layer for non-trivial business logic.
+
+
+import csv
+
+from django.http import HttpResponse
+
+
+class CSVExportService:
+
+    @staticmethod
+    def export_contacts(queryset):
+
+        response = HttpResponse(
+            content_type="text/csv"
+        )
+
+        response["Content-Disposition"] = (
+            'attachment; filename="contacts.csv"'
+        )
+
+        writer = csv.writer(response)
+
+        writer.writerow(
+            [
+                "Name",
+                "Email",
+                "Phone",
+                "Status",
+                "Relationship Score",
+            ]
+        )
+
+        for contact in queryset:
+            writer.writerow(
+                [
+                    contact.name,
+                    contact.email,
+                    contact.phone,
+                    contact.status,
+                    contact.relationship_score,
+                ]
+            )
+
+        return response

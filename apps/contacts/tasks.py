@@ -1,3 +1,5 @@
+import csv
+
 from celery import shared_task
 
 from .models import Contact
@@ -102,3 +104,30 @@ def generate_weekly_crm_report():
             user,
             report,
         )
+
+
+@shared_task
+def import_contacts(file_path, user_id):
+
+    user = User.objects.get(
+        id=user_id
+    )
+
+    with open(file_path) as file:
+
+        reader = csv.DictReader(file)
+
+        for row in contacts:
+            Contact.objects.update_or_create(
+            owner=request.user,
+            email=row["email"],
+            defaults={
+                "name": row["name"],
+                "phone": row["phone"],
+                "job_title": row["job_title"],
+                "notes": row.get("notes", ""),
+                "status": row.get("status", Contact.Status.ACTIVE),
+                "category": row.get("category", Contact.Category.OTHER),
+            },
+        )
+

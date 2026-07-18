@@ -18,6 +18,11 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from apps.ai.services import trigger_summary_generation
+from apps.contacts.services import CSVExportService
+from rest_framework.views import APIView
+
+from django.core.files.storage import default_storage
+from .tasks import import_contacts
 
 class ContactViewSet(viewsets.ModelViewSet):
     queryset = Contact.objects.all()
@@ -110,3 +115,47 @@ class ContactViewSet(viewsets.ModelViewSet):
         )
 
         return Response(serializer.data)
+
+
+class ExportContactsView(APIView):
+
+    def get(self, request):
+
+        contacts = Contact.objects.filter(
+            owner=request.user,
+            is_deleted=False,
+        )
+
+        return CSVExportService.export_contacts(
+            contacts
+        )
+
+class ImportContactsView(APIView):
+
+    def post(self, request):
+
+        file = request.FILES.get("file")
+
+        if not file:
+            return Response(
+                {"detail": "No file uploaded."},
+                status=400,
+            )
+        
+        if file.content_type != "text/csv":
+            return Response(
+                {"detail": "Invalid file type."},
+                status=400,
+            )
+        
+        if file.size > 10 * 1024 * 1024:
+            return Response(
+                {"detail": "File size exceeds 10MB."},
+                status=400,
+            )
+        
+        try:
+            import_contacts.delay(file.name, request.user.id)
+            return Response({"message": "Import started."})
+        except Exception as e:
+            return Response({"detail": str(e)}, status=500)
