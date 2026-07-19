@@ -36,6 +36,10 @@ GOOGLE_CLIENT_ID = env("GOOGLE_CLIENT_ID")
 
 GEMINI_API_KEY = env("GEMINI_API_KEY")
 
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+]
+
 # Application definition
 
 
@@ -61,6 +65,8 @@ INSTALLED_APPS = [
     "django_filters",
 
     "django_celery_beat",
+
+    
 ]
 
 MIDDLEWARE = [
@@ -71,6 +77,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "corsheaders.middleware.CorsMiddleware",
 ]
 
 ROOT_URLCONF = 'config.urls'
